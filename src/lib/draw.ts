@@ -6,8 +6,8 @@ export const NAMES = [
   '李泽广',
 ]
 
-// 第 2、3 次抽奖不能涉及的人
-export const EXCLUDED_AFTER_FIRST = '钟峥诚'
+// 第 3、4 轮不能涉及的人（既不会停下被转中，也不可被点选）
+export const EXCLUDED_IN_PICKER = ['钟峥诚', '陈柏赐', '李泽广']
 
 export interface DrawResult {
   round: number
@@ -27,11 +27,11 @@ function rand<T>(arr: T[]): T {
  * - 第 1、2 次：全员等概率，停下的人即为中奖者（抽到谁就是谁）
  * - 第 3 次：停下的人为「导演」，中奖者由导演在弹窗中点选「离 TA 最近的人」
  * - 第 4 次：停下的人为「导演」，中奖者由导演点选「坐在 TA 对面的人」
- * - 第 3、4 次停下的人不能是 EXCLUDED_AFTER_FIRST，也不能已中过奖
+ * - 第 3、4 次停下的人不能在 EXCLUDED_IN_PICKER 中，也不能已中过奖
  */
 export function pickStop(round: number, prevWinners: string[], prevStops: string[]): DrawResult {
   const pool = NAMES.filter((x) => !prevWinners.includes(x) && !prevStops.includes(x))
-  const eligible = round <= 2 ? pool : pool.filter((x) => x !== EXCLUDED_AFTER_FIRST)
+  const eligible = round <= 2 ? pool : pool.filter((x) => !EXCLUDED_IN_PICKER.includes(x))
   const stopName = rand(eligible)
   const stopIndex = NAMES.indexOf(stopName)
 
@@ -46,5 +46,5 @@ export function pickStop(round: number, prevWinners: string[], prevStops: string
 
 /** 第 3、4 次点选弹窗中不可选的名字 */
 export function disabledNames(stopName: string, prevWinners: string[]): string[] {
-  return [...new Set([...prevWinners, stopName, EXCLUDED_AFTER_FIRST])]
+  return [...new Set([...prevWinners, stopName, ...EXCLUDED_IN_PICKER])]
 }
